@@ -37,6 +37,12 @@ const frequencyDeviationThreshold = 1.6;
 const nUnfilteredFrequenciesToStore = 15;
 const centOffsetSmoothing = 12;
 
+window.oncontextmenu = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+};
+
 window.onload = ev => {
 
     {

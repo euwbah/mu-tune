@@ -43,6 +43,12 @@ window.oncontextmenu = function(event) {
     return false;
 };
 
+$('#play').oncontextmenu(function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+});
+
 window.onload = ev => {
 
     {

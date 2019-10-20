@@ -132,19 +132,19 @@ window.onload = ev => {
 
     let playBtn = $('#play');
 
-    playBtn.mousedown(() => {
+    playBtn[0].onpointerdown = () => {
         gain.gain.value = 0.6;
         playBtn.css({
             filter: 'invert(100%) blur(1px)'
         })
-    });
+    };
 
-    playBtn.mouseup(() => {
+    playBtn[0].onpointerup = () => {
         gain.gain.value = 0;
         playBtn.css({
             filter: 'invert(70%)'
         })
-    });
+    };
 
     const frame = () => {
         // Method 1: Autocorrelation

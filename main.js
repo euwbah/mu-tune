@@ -30,7 +30,7 @@ let nFrequenciesToStore = window.innerWidth / 2;
 let frequencies = [];
 
 const displayScrollSmoothing = 6;
-const ampThreshold = -100;
+const ampThreshold = -80;
 /// A frequency will only be accepted if the average of the last n unfiltered frequencies is within a
 /// factor of `frequencyDeviationThreshold` of the current frequency.
 const frequencyDeviationThreshold = 1.6;
@@ -38,6 +38,41 @@ const nUnfilteredFrequenciesToStore = 15;
 const centOffsetSmoothing = 12;
 
 window.onload = ev => {
+
+    {
+        let configStr = location.hash.substr(1);
+
+        let [divisionsStr, baseFreqStr, scaleStr, offsetStr] = configStr.split(",");
+        let [stepsStr, repeatingIntervalStr] = divisionsStr.split(/ed/i);
+
+        try {
+            steps = parseInt(stepsStr);
+        } catch (e) {
+            alert('Error parsing config: steps')
+        }
+        try {
+            repeatingIntervalType = eval(repeatingIntervalStr);
+        } catch (e) {
+            alert('Error parsing config: repeating interval')
+        }
+        try {
+            baseFreq = parseFloat(baseFreqStr);
+        } catch (e) {
+            alert('Error parsing config: base frequency')
+        }
+        try {
+            scalePattern = scaleStr.split('-').map(x => parseInt(x));
+        } catch (e) {
+            alert('Error parsing config: scale pattern')
+        }
+        try {
+            rootNoteStepsFromBaseFreq = parseInt(offsetStr);
+        } catch (e) {
+            alert('Error parsing config: root note offset')
+        }
+
+        console.log(steps, repeatingIntervalType, baseFreq, scalePattern, rootNoteStepsFromBaseFreq);
+    }
 
     // This will contain the notes to be highlighted as 'white notes' of the scale.
     // e.g. a 12ED2 major scale would make scaleNotes hold the value [0, 2, 4, 5, 7, 9, 11, 12]
@@ -136,9 +171,9 @@ window.onload = ev => {
             }
 
             freq = smoothFreq / (nonNullCount + 5);
-
-            freqtext.text(`${freq.toFixed(2)}Hz, ${amp.toFixed(2)}dB`);
         }
+
+        freqtext.text(`${freq ? freq.toFixed(2) : 'nil' }Hz, ${amp.toFixed(2)}dB`);
 
         frequencies.push(freq);
         if (frequencies.length > nFrequenciesToStore)
@@ -229,10 +264,12 @@ window.onload = ev => {
                 recentFreqs.push(f);
         }
 
+        let stepsFromBaseFreq;
+
         if (recentFreqs.length !== 0) {
-            let avgFreq = recentFreqs.reduce((a,b) => a + b) / recentFreqs.length;
+            let avgFreq = recentFreqs.reduce((a, b) => a + b) / recentFreqs.length;
             let octsFromBaseFreq = Math.log2(avgFreq / baseFreq);
-            let stepsFromBaseFreq = octsFromBaseFreq / stepSize;
+            stepsFromBaseFreq = octsFromBaseFreq / stepSize;
             correctNote = Math.round(stepsFromBaseFreq);
             let centsOffset = (stepsFromBaseFreq - correctNote) * stepSize * 1200;
             centstext.text(`${centsOffset > 0 ? '+' : ''}${centsOffset.toFixed(2)} ¢`)

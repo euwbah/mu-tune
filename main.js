@@ -29,7 +29,13 @@ let highestDisplayedPitch = lowestDisplayedPitch + window.innerHeight / pxDistan
 let nFrequenciesToStore = window.innerWidth / 2;
 let frequencies = [];
 
-const displayScrollSmoothing = 10;
+const displayScrollSmoothing = 6;
+const ampThreshold = -100;
+/// A frequency will only be accepted if the average of the last n unfiltered frequencies is within a
+/// factor of `frequencyDeviationThreshold` of the current frequency.
+const frequencyDeviationThreshold = 1.6;
+const nUnfilteredFrequenciesToStore = 15;
+const centOffsetSmoothing = 12;
 
 window.onload = ev => {
 
@@ -51,88 +57,202 @@ window.onload = ev => {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    let voice = new Wad({source : 'mic' }); // At this point, your browser will ask for permission to access your microphone.
-    let tuner = new Wad.Poly();
-    tuner.setVolume(0); // If you're not using headphones, you can eliminate microphone feedback by muting the output from the tuner.
-    tuner.add(voice);
+    let freqtext = $('#freqtext');
+    let centstext = $('#centstext');
 
-    voice.play(); // You must give your browser permission to access your microphone before calling play().
+    let tuner = new Microphone();
+    tuner.initialize();
 
-    tuner.updatePitch();
-    // The tuner is now calculating the pitch and note name of its input 60 times per second.
-    // These values are stored in <code>tuner.pitch</code> and <code>tuner.noteName</code>.
+    // Contains the last few raw frequencies from the algorithm to test for high deviations.
+    let lastUnfilteredFrequencies = new Array(nUnfilteredFrequenciesToStore).fill(rootNoteStepsFromBaseFreq);
+
+    // Stores the closest tempered note that is picked up by the mic.
+    // Units are in steps from base frequency.
+    let correctNote = 0;
+
+    let AC = window.AudioContext || window.webkitAudioContext;
+    let actx = new AC();
+
+    let gain = actx.createGain();
+    gain.gain.value = 0;
+    gain.connect(actx.destination);
+
+    let osc = actx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = baseFreq;
+    osc.connect(gain);
+    osc.start();
+
+    let playBtn = $('#play');
+
+    playBtn.mousedown(() => {
+        gain.gain.value = 0.6;
+        playBtn.css({
+            filter: 'invert(100%) blur(1px)'
+        })
+    });
+
+    playBtn.mouseup(() => {
+        gain.gain.value = 0;
+        playBtn.css({
+            filter: 'invert(70%)'
+        })
+    });
 
     const frame = () => {
-        // console.log(tuner.accPitch, tuner.noteName);
+        // Method 1: Autocorrelation
+        // Method 2: FFT
+        let freq = tuner.getFreq(1);
+        let amp = tuner.getMaxInputAmplitude();
 
-        if (tuner.accPitch !== undefined) {
-            frequencies.push(tuner.accPitch);
-            if (frequencies.length > nFrequenciesToStore)
-                frequencies.splice(0, frequencies.length - nFrequenciesToStore);
+        // Manage unfiltered frequencies in order to detect frequency jump anomalies.
+        if (!!freq) {
+            lastUnfilteredFrequencies.push(freq);
+            if (lastUnfilteredFrequencies.length > nUnfilteredFrequenciesToStore)
+                lastUnfilteredFrequencies.splice(0, lastUnfilteredFrequencies.length - nUnfilteredFrequenciesToStore);
+        }
 
-            ctx.clearRect(0, 0, cv.width, cv.height);
+        let avgUnfilteredFreq = lastUnfilteredFrequencies.reduce((a, b) => a + b) / lastUnfilteredFrequencies.length;
 
-            let currPitchYCoord = convertFreqToYCoord(tuner.accPitch);
+        if (!freq || amp < ampThreshold)
+            freq = null;
+
+        if (freq / avgUnfilteredFreq > frequencyDeviationThreshold || avgUnfilteredFreq / freq > frequencyDeviationThreshold) {
+            freq = null;
+            // console.log('Frequency anomaly detected');
+        }
+
+        // Average out frequencies
+
+        if (freq) {
+            let smoothFreq = freq * 5;
+            let nonNullCount = 0;
+            for (let i = frequencies.length - 1; nonNullCount < 5 && i >= 0; i--) {
+                let f = frequencies[i];
+                if (f) {
+                    smoothFreq += frequencies[i];
+                    nonNullCount++;
+                }
+            }
+
+            freq = smoothFreq / (nonNullCount + 5);
+
+            freqtext.text(`${freq.toFixed(2)}Hz, ${amp.toFixed(2)}dB`);
+        }
+
+        frequencies.push(freq);
+        if (frequencies.length > nFrequenciesToStore)
+            frequencies.splice(0, frequencies.length - nFrequenciesToStore);
+
+        ctx.clearRect(0, 0, cv.width, cv.height);
+
+        if (freq !== null) {
+            let currPitchYCoord = convertFreqToYCoord(freq);
             if (currPitchYCoord < 100) {
-                highestDisplayedPitch += 0.005 + (100 - currPitchYCoord) / pxDistanceBetweenOctaves / displayScrollSmoothing;
+                highestDisplayedPitch += 0.001 + (100 - currPitchYCoord) / pxDistanceBetweenOctaves / displayScrollSmoothing;
                 lowestDisplayedPitch = highestDisplayedPitch - cv.height / pxDistanceBetweenOctaves;
             } else if (currPitchYCoord > cv.height - 100) {
-                lowestDisplayedPitch -= 0.005 + (currPitchYCoord - (cv.height - 100)) / pxDistanceBetweenOctaves / displayScrollSmoothing;
+                lowestDisplayedPitch -= 0.001 + (currPitchYCoord - (cv.height - 100)) / pxDistanceBetweenOctaves / displayScrollSmoothing;
                 highestDisplayedPitch = lowestDisplayedPitch + cv.height / pxDistanceBetweenOctaves;
             }
+        }
 
-            // Draw note lines
+        // Draw note lines
 
-            // First convert the repeatingIntervalSize into octaves.
-            // If system is n EDO, then repeatingIntervalType is 2
-            // If system is in n ED3 (tritaves), then repeatingIntervalType is 3.
-            let repeatingIntervalSizeInOctaves = Math.log2(repeatingIntervalType);
+        // First convert the repeatingIntervalSize into octaves.
+        // If system is n EDO, then repeatingIntervalType is 2
+        // If system is in n ED3 (tritaves), then repeatingIntervalType is 3.
+        let repeatingIntervalSizeInOctaves = Math.log2(repeatingIntervalType);
 
-            // Calculating the fraction of an octave each step spans is trivial...
-            let stepSize = repeatingIntervalSizeInOctaves / steps;
+        // Calculating the fraction of an octave each step spans is trivial...
+        let stepSize = repeatingIntervalSizeInOctaves / steps;
 
-            // The pitch of the bottom-most horizontal pitch line marker in units of steps from the base frequency.
-            let lowestNoteLine = Math.ceil(lowestDisplayedPitch / stepSize);
+        // The pitch of the bottom-most horizontal pitch line marker in units of steps from the base frequency.
+        let lowestNoteLine = Math.ceil(lowestDisplayedPitch / stepSize);
 
-            for (let s = lowestNoteLine; s * stepSize < highestDisplayedPitch; s++) {
-                ctx.beginPath();
-                if (mod((s - rootNoteStepsFromBaseFreq), steps) === 0) {
-                    // This line represents the root of the scale
-                    ctx.strokeStyle = '#33DDFF';
-                    ctx.lineWidth = 5;
-                } else if (scaleNotes.includes(mod((s - rootNoteStepsFromBaseFreq), steps))) {
-                    ctx.strokeStyle = '#0099FF';
-                    ctx.lineWidth = 3;
-                } else {
-                    ctx.strokeStyle = '#AAAAAA';
-                    ctx.lineWidth = 2;
-                }
-
-                let yCoord = convertFreqToYCoord(baseFreq * repeatingIntervalType ** (s / steps));
-                ctx.moveTo(cv.width, yCoord);
-                ctx.lineTo(0, yCoord);
-                ctx.stroke();
+        for (let s = lowestNoteLine; s * stepSize < highestDisplayedPitch; s++) {
+            ctx.beginPath();
+            if (mod((s - rootNoteStepsFromBaseFreq), steps) === 0) {
+                // This line represents the root of the scale
+                ctx.strokeStyle = '#55FFFFCC';
+                ctx.lineWidth = 5;
+            } else if (scaleNotes.includes(mod((s - rootNoteStepsFromBaseFreq), steps))) {
+                ctx.strokeStyle = '#00AAFFAA';
+                ctx.lineWidth = 3;
+            } else {
+                ctx.strokeStyle = '#AAAAAAAA';
+                ctx.lineWidth = 2;
             }
 
+            if (s === correctNote) {
+                ctx.strokeStyle = ctx.strokeStyle.substr(0, 7);
+                ctx.lineWidth = 7;
+            }
 
-            // Draw pitch line
-
-            ctx.beginPath();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#FF9900BB';
-            ctx.moveTo(0, convertFreqToYCoord(frequencies[0]));
-
-            frequencies.forEach((f, idx) => {
-                ctx.lineTo(idx * 2, convertFreqToYCoord(f));
-            });
-
+            let yCoord = convertFreqToYCoord(baseFreq * repeatingIntervalType ** (s / steps));
+            ctx.moveTo(cv.width, yCoord);
+            ctx.lineTo(0, yCoord);
             ctx.stroke();
-
         }
+
+        // Draw pitch line
+
+        // Flag to toggle between moveTo and lineTo.
+        let draw = false;
+
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#FF9900BB';
+
+        frequencies.forEach((f, idx) => {
+            if (f !== null) {
+                if (draw)
+                    ctx.lineTo(idx * 2, convertFreqToYCoord(f));
+                else {
+                    ctx.moveTo(idx * 2, convertFreqToYCoord(f));
+                    draw = true;
+                }
+            } else {
+                draw = false;
+            }
+        });
+
+        ctx.stroke();
+
+        // Calculate cent offset
+
+        // Use average frequencies to make display less haphazard
+        let recentFreqs = [];
+        for (let i = frequencies.length; recentFreqs.length < centOffsetSmoothing && i >= 0; i--) {
+            let f = frequencies[i];
+            if (f)
+                recentFreqs.push(f);
+        }
+
+        if (recentFreqs.length !== 0) {
+            let avgFreq = recentFreqs.reduce((a,b) => a + b) / recentFreqs.length;
+            let octsFromBaseFreq = Math.log2(avgFreq / baseFreq);
+            let stepsFromBaseFreq = octsFromBaseFreq / stepSize;
+            correctNote = Math.round(stepsFromBaseFreq);
+            let centsOffset = (stepsFromBaseFreq - correctNote) * stepSize * 1200;
+            centstext.text(`${centsOffset > 0 ? '+' : ''}${centsOffset.toFixed(2)} ¢`)
+        }
+
+        // Set oscillator freq to correct note
+        osc.frequency.value = baseFreq * repeatingIntervalType ** (correctNote / steps);
+
         requestAnimationFrame(frame);
     };
-    frame();
-    // If you sing into your microphone, your pitch will be logged to the console in real time.
+
+    $('.taptostart').click(() => {
+        if (tuner.isInitialized()) {
+            tuner.startListening();
+            $('#msg').css('display', 'none');
+            frame();
+        } else {
+            alert('Not yet loaded... please try again');
+        }
+    });
 };
 
 function mod(n, m) {

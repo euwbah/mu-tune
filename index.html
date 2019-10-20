@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>mu-tune</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+
     <style>
         html, body {
             margin: 0 !important;
@@ -11,21 +14,97 @@
             height: 100vh;
             overflow: hidden;
         }
+
+        .unselectable {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            outline: 0;
+        }
+
         #cv {
             background-color: black;
             margin: 0 !important;
             padding: 0 !important;
         }
+
+        #freqtext {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            text-align: right;
+            color: aliceblue;
+            font-family: 'Roboto',sans-serif;
+            font-weight: 400;
+        }
+
+        #centstext {
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            top: 40vh;
+            text-align: center;
+            color: white;
+            font-family: 'Roboto',sans-serif;
+            font-weight: 600;
+            font-size: 5rem;
+        }
+
+        #msg {
+            display: table-cell;
+            position: absolute;
+            left: 0vw;
+            top: 2rem;
+            width: 100vw;
+            height: 40vh;
+            text-align: center;
+            vertical-align: middle;
+            color: #7799BB;
+            font-family: 'Roboto',sans-serif;
+            font-weight: 200;
+            font-size: 4rem;
+        }
+
+        #version {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            text-align: right;
+            color: aliceblue;
+            font-family: 'Roboto',sans-serif;
+            font-weight: 400;
+            font-size: 2rem;
+        }
+
+        #play {
+            position: absolute;
+            left: 1rem;
+            bottom: 1rem;
+            width: 4rem;
+            height: 4rem;
+            filter: invert(70%);
+            transition: all 0.25s;
+        }
     </style>
 </head>
 <body>
-<canvas id="cv"></canvas>
+
+<canvas id="cv" class="taptostart"></canvas>
+
+<div id="freqtext">0Hz, -120dB</div>
+<div id="centstext" class="unselectable taptostart">+10.0 ¢</div>
+<div id="msg" class="unselectable taptostart"> tap to start </div>
+<img id="play" src="sound.png">
+<div id="version">v 1.0</div>
 
 <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous"></script>
-<script src="wad.min.js"></script>
+<script src="microphone.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@ let nFrequenciesToStore = window.innerWidth / 2;
 let frequencies = [];
 
 const displayScrollSmoothing = 6;
-const ampThreshold = -100;
+const ampThreshold = -40;
 /// A frequency will only be accepted if the average of the last n unfiltered frequencies is within a
 /// factor of `frequencyDeviationThreshold` of the current frequency.
 const frequencyDeviationThreshold = 1.6;

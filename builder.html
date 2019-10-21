@@ -7,7 +7,8 @@
     <title>mu-tune tuning configuration</title>
 
     <link rel="manifest" href="./manifest.json">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800,900&display=swap"
+          rel="stylesheet">
     <style>
         html, body {
             margin: 0 !important;
@@ -43,18 +44,26 @@
             padding-top: 1rem;
             padding-left: 4rem;
         }
+
         .medium {
             font-size: 80%;
         }
+
         .small {
-            font-size: 60%;
-            font-weight: 300;
+            font-size: 53%;
+            font-weight: 400;
         }
+
         .smalldiv {
-            font-size: 60%;
-            font-weight: 300;
+            font-size: 53%;
+            font-weight: 400;
             margin-top: 0.5rem;
         }
+
+        .grey {
+            color: #bbaa99;
+        }
+
         .err {
             font-size: 60%;
             color: #ff7744;
@@ -76,83 +85,252 @@
             border-bottom-width: 2px;
             padding: 5px;
         }
+
         #steps {
             text-align: right;
         }
+
         #interval {
             width: 3rem;
         }
+
         #scale-pattern {
             width: 80vw;
             max-width: 10rem;
         }
+
         #offset {
             width: 3rem;
         }
+
         #start {
             background: #ff7744;
             color: black;
             padding: 0.5rem 3rem;
+            margin-bottom: 1rem;
             text-align: center;
             font-size: 2rem;
         }
     </style>
 </head>
 <body>
-    <div class="row logo">μuτune</div>
-    <hr>
-    <div class="row">
-        <input type="number" id="steps" min="1" max="400" step="1" value="12">
-        <span>ED</span>
-        <input type="text" id="interval" value="2">
-        <br>
-        <span class="small">Expressions are allowed for interval (eg. 5 ED 5/4)</span>
-        <br>
-        <span id="steps-err" class="err">error msg</span>
-    </div>
-    <div class="row">
-        <span class="medium">base frequency: </span>
-        <input type="number" id="base-freq" min="16" max="22050" value="440">
-        <span>Hz</span>
-        <br>
-        <span id="base-freq-err" class="err">error msg</span>
-    </div>
-    <div class="row">
-        <span class="medium">scale pattern: </span>
-        <input type="text" id="scale-pattern" value="2-2-1-2-2-2-1">
-        <br>
-        <span id="scale-pattern-err" class="err">error msg</span>
-    </div>
-    <div class="row">
-        <span class="medium">offset:</span>
-        <input type="number" id="offset" step="1" value="3">
-        <br>
-        <div class="smalldiv">
-            no. of steps the root note of the scale differs from the base frequency <br><br>
-            (eg. 440Hz is A, C is 3 steps above from A in 12ED2)
-        </div>
-        <span id="offset-err" class="err">error msg</span>
-    </div>
+<div class="row logo">μuτune</div>
+<hr>
+<div class="row">
+    <input type="number" id="steps" min="1" max="400" step="1" value="12">
+    <span>ED</span>
+    <input type="text" id="interval" value="2">
     <br>
-    <div class="row">
-        <div id="start"> start </div>
+    <span class="small grey">math expressions are allowed for interval (eg. 5 ED 5/4)</span>
+    <br>
+    <span id="steps-err" class="err"></span>
+</div>
+<div class="row">
+    <span class="medium">base frequency: </span>
+    <input type="number" id="base-freq" min="16" max="22050" value="440">
+    <span>Hz</span>
+    <br>
+    <span id="base-freq-err" class="err"></span>
+</div>
+<div class="row">
+    <span class="medium">scale pattern: </span>
+    <input type="text" id="scale-pattern" value="2 2 1 2 2 2 1">
+    <br>
+    <span id="scale-pattern-err" class="err"></span>
+</div>
+<div class="row">
+    <span class="medium">offset:</span>
+    <input type="number" id="offset" step="1" value="3">
+    <br>
+    <div class="smalldiv grey">
+        no. of steps the root note of the scale differs from the base frequency <br>
+        (eg. 440Hz is A, C is 3 steps above from A in 12ED2)
     </div>
+    <span id="offset-err" class="err"></span>
+</div>
+<br>
+<div class="row">
+    <div id="start"> start</div>
+</div>
 
 <script
-    src="https://code.jquery.com/jquery-3.4.1.min.js"
-    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-    crossorigin="anonymous"></script>
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
 
 <script>
     window.onload = () => {
-        $('#start').click(() => {
-            let steps = $('#steps').val();
-            let interval = $('#interval').val();
-            let baseFreq = $('#base-freq').val();
-            let scalePattern = $('#scale-pattern').val();
-            let offset = $('#offset').val();
+        let $steps = $('#steps');
+        let $interval = $('#interval');
+        let $stepsErr = $('#steps-err');
 
-            location.href = `index.html#${steps}ed${interval},${baseFreq},${scalePattern},${offset}`;
+        let $baseFreq = $('#base-freq');
+        let $baseFreqErr = $('#base-freq-err');
+
+        let $scalePattern = $('#scale-pattern');
+        let $scalePatternErr = $('#scale-pattern-err');
+
+        let $offset = $('#offset');
+        let $offsetErr = $('#offset-err');
+
+        let stepsOk = true,
+            intervalOk = true,
+            baseFreqOk = true,
+            scalePatternOk = true,
+            offsetOk = true;
+
+        if (location.hash.trim().length !== 0) {
+            try {
+                let configStr = location.hash.substr(1);
+
+                let [divisionsStr, baseFreqStr, scaleStr, offsetStr] = configStr.split(",");
+                let [stepsStr, repeatingIntervalStr] = divisionsStr.split(/ed/i);
+
+                $steps.val(stepsStr);
+                $interval.val(repeatingIntervalStr);
+                $baseFreq.val(baseFreqStr);
+                $scalePattern.val(scaleStr.replace(/-/g, ' '));
+                $offset.val(offsetStr);
+            } catch {
+                location.hash = '';
+            }
+        }
+
+        $steps.change(() => {
+            let s = parseInt($steps.val());
+            if (isNaN(s)) {
+                $stepsErr.text('steps must be an integer from 1 - 400');
+                stepsOk = false;
+                return;
+            }
+
+            if (s < 1)
+                $steps.val(1);
+            else if (s > 400)
+                $steps.val(400);
+            else
+                $steps.val(s);
+
+            stepsOk = true;
+            $stepsErr.text('');
+
+            // Also check if the scale pattern matches up with the new steps count.
+
+            let sp = $scalePattern.val();
+            let sum = sp.split(/\s+/).map(x => parseInt(x)).reduce((a, b) => a + b);
+
+            if (isNaN(sum)) {
+                $scalePatternErr.text('Invalid format. e.g. format: 2 2 1 2 2 2 1');
+                scalePatternOk = false;
+                return;
+            }
+
+            if (sum !== parseInt($steps.val())) {
+                $scalePatternErr.text(
+                    `Pattern has ${sum} steps, expected ${parseInt($steps.val())}`);
+                scalePatternOk = false;
+            } else {
+                $scalePatternErr.text('');
+                scalePatternOk = true;
+            }
+
+        });
+
+        $interval.change(() => {
+            try {
+                let s = eval($interval.val());
+
+                if (s === undefined) {
+                    $stepsErr.text(`Interval must evaluate to a positive number`);
+                } else if (typeof (s) !== 'number' || isNaN(s) || s <= 0) {
+                    $stepsErr.text(`${$interval.val()} must evaluate to a positive number`);
+                    intervalOk = false;
+                } else {
+                    intervalOk = true;
+                    $stepsErr.text('');
+                }
+            } catch {
+                $stepsErr.text(`${$interval.val()} is not a valid expression`);
+                intervalOk = false;
+            }
+        });
+
+        $baseFreq.change(() => {
+            let b = parseFloat($baseFreq.val());
+            if (isNaN(b)) {
+                $baseFreqErr.text('base freq must be a number from 16 - 22050');
+                baseFreqOk = false;
+                return;
+            }
+
+            if (b < 16)
+                $baseFreq.val(16);
+            else if (b > 22050)
+                $baseFreq.val(22050);
+
+            baseFreqOk = true;
+            $baseFreqErr.text('');
+        });
+
+        $scalePattern.change(() => {
+            let s = $scalePattern.val();
+            let sum = s.split(/\s+/).map(x => parseInt(x)).reduce((a, b) => a + b);
+
+            if (isNaN(sum)) {
+                $scalePatternErr.text('Invalid format. e.g. format: 2 2 1 2 2 2 1');
+                scalePatternOk = false;
+                return;
+            }
+
+            if (sum !== parseInt($steps.val())) {
+                $scalePatternErr.text(
+                    `Pattern has ${sum} steps, expected ${parseInt($steps.val())}`);
+                scalePatternOk = false;
+            } else {
+                $scalePatternErr.text('');
+                scalePatternOk = true;
+            }
+        });
+
+        $offset.change(() => {
+            let s = parseInt($offset.val());
+            if (isNaN(s)) {
+                $offsetErr.text('offset must be an integer');
+                offsetOk = false;
+                return;
+            }
+
+            $offset.val(s);
+
+            offsetOk = true;
+            $offsetErr.text('');
+        });
+
+        $('input').change(() => {
+            console.log('input change', scalePatternOk, baseFreqOk, intervalOk, offsetOk, stepsOk);
+
+            if ((scalePatternOk && baseFreqOk && intervalOk && offsetOk && stepsOk) === false) {
+                $('#start').css({
+                    background: '#888888'
+                });
+            } else {
+                $('#start').css({
+                    background: '#ff7744'
+                });
+            }
+        });
+
+        $('#start').click(() => {
+
+            if (scalePatternOk && baseFreqOk && intervalOk && offsetOk && stepsOk) {
+                let steps = $('#steps').val();
+                let interval = $('#interval').val();
+                let baseFreq = $('#base-freq').val();
+                let scalePattern = $('#scale-pattern').val().replace(/\s+/g, '-');
+                let offset = $('#offset').val();
+
+                location.href = `index.html#${steps}ed${interval},${baseFreq},${scalePattern},${offset}`;
+            }
         });
     };
 </script>

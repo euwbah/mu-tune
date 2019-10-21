@@ -54,10 +54,11 @@ window.onload = ev => {
     // Redirect to scale builder config if no config in the location hash.
     if (location.hash.trim().length === 0) {
         window.location.href = 'builder.html';
+        return;
     }
 
     $('#builder').click(() => {
-       window.location.href = 'builder.html';
+       window.location.href = `builder.html${location.hash}`;
     });
 
     {
@@ -153,7 +154,7 @@ window.onload = ev => {
             osc.start();
             oscStarted = true;
         }
-        gain.gain.value = 0.6;
+        gain.gain.value = 0.5;
         $playBtn.css({
             filter: 'invert(100%) blur(1px)'
         })
@@ -183,7 +184,7 @@ window.onload = ev => {
             $snapBtn.css({
                 backgroundColor: 'transparent',
                 color: '#ffaa00aa',
-                fontWeight: 200
+                fontWeight: 300
             });
         }
     });

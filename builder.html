@@ -12,29 +12,68 @@
         html, body {
             margin: 0 !important;
             padding: 0 !important;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
             color: white;
             background: black;
             font-family: Roboto, sans-serif;
             font-size: 28px;
+            font-weight: 300;
         }
-        .center {
-            margin: auto;
-            text-align: center;
-            padding: 1rem;
-        }
-        span {
 
+        .row {
+            margin: auto;
+            padding: 0.3rem 1rem;
         }
+
+        @media all and (max-width: 480px) {
+            html, body {
+                font-size: 24px;
+            }
+        }
+
+        @media all and (min-width: 481px) {
+            .row {
+                width: 70vw;
+                left: 30vw;
+            }
+        }
+
+        .logo {
+            font-weight: 300;
+            color: #ffaa55;
+            padding-top: 1rem;
+            padding-left: 4rem;
+        }
+        .medium {
+            font-size: 80%;
+        }
+        .small {
+            font-size: 60%;
+            font-weight: 300;
+        }
+        .smalldiv {
+            font-size: 60%;
+            font-weight: 300;
+            margin-top: 0.5rem;
+        }
+        .err {
+            font-size: 60%;
+            color: #ff7744;
+        }
+
+        hr {
+            border-color: #ff7744;
+            width: 86vw;
+        }
+
         input {
             background: #331a00;
             color: white;
-            font-size: 28px;
-            border-width: 0px;
-            border-bottom-width: 1px;
-            border-radius: 10px;
+            font-family: Roboto, sans-serif;
+            font-weight: 400;
+            font-size: 1rem;
+            border-width: 0;
+            border-color: #ff7744;
+            border-bottom-width: 2px;
             padding: 5px;
         }
         #steps {
@@ -43,13 +82,79 @@
         #interval {
             width: 3rem;
         }
+        #scale-pattern {
+            width: 80vw;
+            max-width: 10rem;
+        }
+        #offset {
+            width: 3rem;
+        }
+        #start {
+            background: #ff7744;
+            color: black;
+            padding: 0.5rem 3rem;
+            text-align: center;
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
-    <div class="center">
+    <div class="row logo">μuτune</div>
+    <hr>
+    <div class="row">
         <input type="number" id="steps" min="1" max="400" step="1" value="12">
         <span>ED</span>
         <input type="text" id="interval" value="2">
+        <br>
+        <span class="small">Expressions are allowed for interval (eg. 5 ED 5/4)</span>
+        <br>
+        <span id="steps-err" class="err">error msg</span>
     </div>
+    <div class="row">
+        <span class="medium">base frequency: </span>
+        <input type="number" id="base-freq" min="16" max="22050" value="440">
+        <span>Hz</span>
+        <br>
+        <span id="base-freq-err" class="err">error msg</span>
+    </div>
+    <div class="row">
+        <span class="medium">scale pattern: </span>
+        <input type="text" id="scale-pattern" value="2-2-1-2-2-2-1">
+        <br>
+        <span id="scale-pattern-err" class="err">error msg</span>
+    </div>
+    <div class="row">
+        <span class="medium">offset:</span>
+        <input type="number" id="offset" step="1" value="3">
+        <br>
+        <div class="smalldiv">
+            no. of steps the root note of the scale differs from the base frequency <br><br>
+            (eg. 440Hz is A, C is 3 steps above from A in 12ED2)
+        </div>
+        <span id="offset-err" class="err">error msg</span>
+    </div>
+    <br>
+    <div class="row">
+        <div id="start"> start </div>
+    </div>
+
+<script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+
+<script>
+    window.onload = () => {
+        $('#start').click(() => {
+            let steps = $('#steps').val();
+            let interval = $('#interval').val();
+            let baseFreq = $('#base-freq').val();
+            let scalePattern = $('#scale-pattern').val();
+            let offset = $('#offset').val();
+
+            location.href = `index.html#${steps}ed${interval},${baseFreq},${scalePattern},${offset}`;
+        });
+    };
+</script>
 </body>
 </html>

@@ -78,7 +78,7 @@ function Microphone() {
 // to request browser-level access to a user's microphone. In general, do not
 // change any part of this initialize function without a compelling reason.
 
-    this.initialize = function() {
+    this.initialize = function () {
         // Set parameters
         initialized = false;
         context = null;
@@ -89,35 +89,37 @@ function Microphone() {
         BUFFER_LEN = 1024;          // Keep a power of 2, but can change to
                                     // provide more data, increased resolution
         MIN_SUPPORTED_FREQ = 60;
-        MAX_PEAK_SEARCH = (SAMPLE_RATE/MIN_SUPPORTED_FREQ);
+        MAX_PEAK_SEARCH = (SAMPLE_RATE / MIN_SUPPORTED_FREQ);
         fft = null;
         spectrum = null;
         MY_FFT_SIZE = BUFFER_LEN;
-        FFT_FREQ_RES = (SAMPLE_RATE/2)/(MY_FFT_SIZE/2);
+        FFT_FREQ_RES = (SAMPLE_RATE / 2) / (MY_FFT_SIZE / 2);
         processing = false;
         recording = false;
         recordingLength = 0;
         leftChannel = [];
         rightChannel = [];
-        notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
-            "C#2" : 69.2957, "D2" : 73.4162, "D#2" : 77.7817, "E2" : 82.4069,
-            "F2" : 87.3071, "F#2" : 92.4986, "G2" : 97.9989, "G#2" : 103.826,
-            "A2" : 110, "A#2" : 116.542, "B2" : 123.471, "C3" : 130.813,
-            "C#3" : 138.591, "D3" : 146.832, "D#3" : 155.563, "E3" : 164.814,
-            "F3" : 174.614, "F#3" : 184.997, "G3" : 195.998, "G#3" : 207.652,
-            "A3" : 220, "A#3" : 233.082, "B3" : 246.942, "C4" : 261.626,
-            "C#4" : 277.183, "D4" : 293.665, "D#4" : 311.127, "E4" : 329.628,
-            "F4" : 349.228, "F#4" : 369.994, "G4" : 391.995, "G#4" : 415.305,
-            "A4" : 440, "A#4" : 466.164, "B4" : 493.883, "C5" : 523.251,
-            "C#5" : 554.365, "D5" : 587.330, "D#5" : 622.254, "E5" : 659.255,
-            "F5" : 698.456, "F#5" : 739.989, "G5" : 783.991, "G#5" : 830.609,
-            "A5" : 880, "A#5" : 932.328, "B5" : 987.767, "C6" : 1046.5,
-            "C#6" : 1108.73, "D6" : 1174.66, "D#6" : 1244.51, "E6" : 1318.51,
-            "F6" : 1396.91, "F#6" : 1479.98, "G6" : 1567.98, "G#6" : 1661.22,
-            "A6" : 1760, "A#6" : 1864.66, "B6" : 1975.53, "C7" : 2093,
-            "C#7" : 2217.46, "D7" : 2349.32, "D#7" : 2489.02, "E7" : 2637.02,
-            "F7" : 2793.83, "F#7" : 2959.96, "G7" : 3135.96, "G#7" : 3322.44,
-            "A7" : 3520, "A#7" : 3729.31, "B7" : 3951.07, "C8" : 4186.01};
+        notes = {
+            "A#1": 58.2705, "B1": 61.7354, "C2": 65.4064,
+            "C#2": 69.2957, "D2": 73.4162, "D#2": 77.7817, "E2": 82.4069,
+            "F2": 87.3071, "F#2": 92.4986, "G2": 97.9989, "G#2": 103.826,
+            "A2": 110, "A#2": 116.542, "B2": 123.471, "C3": 130.813,
+            "C#3": 138.591, "D3": 146.832, "D#3": 155.563, "E3": 164.814,
+            "F3": 174.614, "F#3": 184.997, "G3": 195.998, "G#3": 207.652,
+            "A3": 220, "A#3": 233.082, "B3": 246.942, "C4": 261.626,
+            "C#4": 277.183, "D4": 293.665, "D#4": 311.127, "E4": 329.628,
+            "F4": 349.228, "F#4": 369.994, "G4": 391.995, "G#4": 415.305,
+            "A4": 440, "A#4": 466.164, "B4": 493.883, "C5": 523.251,
+            "C#5": 554.365, "D5": 587.330, "D#5": 622.254, "E5": 659.255,
+            "F5": 698.456, "F#5": 739.989, "G5": 783.991, "G#5": 830.609,
+            "A5": 880, "A#5": 932.328, "B5": 987.767, "C6": 1046.5,
+            "C#6": 1108.73, "D6": 1174.66, "D#6": 1244.51, "E6": 1318.51,
+            "F6": 1396.91, "F#6": 1479.98, "G6": 1567.98, "G#6": 1661.22,
+            "A6": 1760, "A#6": 1864.66, "B6": 1975.53, "C7": 2093,
+            "C#7": 2217.46, "D7": 2349.32, "D#7": 2489.02, "E7": 2637.02,
+            "F7": 2793.83, "F#7": 2959.96, "G7": 3135.96, "G#7": 3322.44,
+            "A7": 3520, "A#7": 3729.31, "B7": 3951.07, "C8": 4186.01
+        };
 
         // Make a note that the microphone is about to be accessed
         console.log('Beginning!');
@@ -133,24 +135,20 @@ function Microphone() {
             // Request the microphone
             navigator.getUserMedia({
                 audio: {
-                    mandatory: {
-                        // Firefox params
-                        echoCancellation: false,
-                        autoGainControl: false,
-                        noiseSuppression: false,
+                    // Firefox params
+                    echoCancellation: false,
+                    autoGainControl: false,
+                    noiseSuppression: false,
 
-                        // Chrome params
-                        googEchoCancellation: false,
-                        googAutoGainControl: false,
-                        googAutoGainControl2: false,
-                        googNoiseSuppression: false,
-                        googHighpassFilter: false,
-                        googTypingNoiseDetection: false
-                    }
+                    // Chrome params
+                    googEchoCancellation: false,
+                    googAutoGainControl: false,
+                    googAutoGainControl2: false,
+                    googNoiseSuppression: false,
+                    googHighpassFilter: false
                 }
             }, gotStream, noStream);
-        }
-        else {
+        } else {
             alert('Sorry, your browser does not support getUserMedia');
         }
     }
@@ -173,7 +171,7 @@ function Microphone() {
         // Set up a processing node that will allow us to pass mic input off to
         // the DSP library for frequency domain analysis
         procNode = context.createScriptProcessor(BUFFER_LEN, 1, 1);
-        procNode.onaudioprocess = function(e) {
+        procNode.onaudioprocess = function (e) {
             timeData = e.inputBuffer.getChannelData(0);
             if (recording) {
                 leftChannel.push(new Float32Array(timeData));
@@ -204,11 +202,10 @@ function Microphone() {
 // microphone object has been fully initialized (indicated by the var
 // 'initialized' being equal to true. Returns a boolean value.
 
-    this.isInitialized = function() {
+    this.isInitialized = function () {
         if (initialized) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -219,11 +216,10 @@ function Microphone() {
 // initialized before this function is called -- in other words, if a user
 // tries to get mic data before allowing the browser permission to collect it.
 
-    this.startListening = function() {
+    this.startListening = function () {
         if (!initialized) {
             throw "Not initialized";
-        }
-        else {
+        } else {
             console.log('Now listening');
             if (!processing) {
                 processing = true;
@@ -237,7 +233,7 @@ function Microphone() {
 // stopListening function. Disconnects the microphone input. Can be called or
 // tied to a button to save on processing.
 
-    this.stopListening = function() {
+    this.stopListening = function () {
         console.log('Done listening');
         if (processing && !recording) {
             processing = false;
@@ -251,11 +247,10 @@ function Microphone() {
 // startRecording function. Begins gathering microphone input and storing it in
 // a WAV file.
 
-    this.startRecording = function() {
+    this.startRecording = function () {
         if (!initialized || !processing) {
             throw "Microphone not initialized / not processing"
-        }
-        else {
+        } else {
             console.log('Now recording');
             if (!recording) {
                 recording = true;
@@ -267,7 +262,7 @@ function Microphone() {
 // stopRecording function. Stops packaging incoming microphone data into WAV
 // file.
 
-    this.stopRecording = function() {
+    this.stopRecording = function () {
         console.log('Done recording');
         if (recording) {
             recording = false;
@@ -312,7 +307,7 @@ function Microphone() {
 // microphone signal, expressed in deciBels (scaled from -120). Gives an idea
 // of the volume of the sound picked up by the microphone.
 
-    this.getMaxInputAmplitude = function() {
+    this.getMaxInputAmplitude = function () {
         var minDb = -120;
         var minMag = Math.pow(10.0, minDb / 20.0);
         var m = timeData[0];
@@ -323,7 +318,7 @@ function Microphone() {
             }
         }
 
-        return 20.0*Math.log(Math.max(m, minMag));
+        return 20.0 * Math.log(Math.max(m, minMag));
     }
 
 // -----------------------------------------------------------------------------
@@ -331,14 +326,13 @@ function Microphone() {
 // autocorrelation, 2 to use FFT). Output: the detected frequency calculated via
 // the selected method.
 
-    this.getFreq = function(method) {
+    this.getFreq = function (method) {
         if (!processing) {
             throw "Cannot compute frequency from null input";
         }
         if (method == 1) {
             return computeFreqFromAutocorr();
-        }
-        else if (method == 2) {
+        } else if (method == 2) {
             return computeFreqFromFFT();
         }
     }
@@ -348,14 +342,13 @@ function Microphone() {
 // autocorrelation, 2 to use FFT). Output: the detected note calculated via
 // the selected method.
 
-    this.getNote = function(method) {
+    this.getNote = function (method) {
         if (!processing) {
             throw "Cannot compute frequency from null input";
         }
         if (method == 1) {
             return getNoteFromAutocorr();
-        }
-        else if (method == 2) {
+        } else if (method == 2) {
             return getNoteFromFFT();
         }
     }
@@ -365,14 +358,13 @@ function Microphone() {
 // autocorrelation, 2 to use FFT). Output: the detected note cents offset
 // calculated via the selected method.
 
-    this.getNoteCents = function(method) {
+    this.getNoteCents = function (method) {
         if (!processing) {
             throw "Cannot compute frequency from null input";
         }
         if (method == 1) {
             return getNoteCentsFromAutocorr();
-        }
-        else if (method == 2) {
+        } else if (method == 2) {
             return getNoteCentsFromFFT();
         }
     }
@@ -392,7 +384,7 @@ function Microphone() {
         for (i = 0; i < BUFFER_LEN; i++) {
             sums[i] = 0;
             for (j = 0; j < BUFFER_LEN - i; j++) {
-                sums[i] += data[j] * data[j+i];
+                sums[i] += data[j] * data[j + i];
             }
         }
         return sums;
@@ -404,8 +396,10 @@ function Microphone() {
 
     function getPeakPeriodicityIndex(sums) {
         // Find second zero crossing, start searching at that point
-        for (i = 0; sums[i] >= 0 && i < BUFFER_LEN; i++) {}
-        for (i = i; sums[i] < 0 && i < BUFFER_LEN; i++) {}
+        for (i = 0; sums[i] >= 0 && i < BUFFER_LEN; i++) {
+        }
+        for (i = i; sums[i] < 0 && i < BUFFER_LEN; i++) {
+        }
         var m = sums[i], maxIndex = i;
         for (i = i; i < MAX_PEAK_SEARCH; i++) {
             if (sums[i] > m) {
@@ -448,7 +442,7 @@ function Microphone() {
         var currFreq = computeFreqFromAutocorr();
         var noteInfo = matchNote(currFreq);
         var noteFreq = noteInfo[1];
-        var cents = 1200*(Math.log(currFreq/Math.round(noteFreq))/Math.log(2));
+        var cents = 1200 * (Math.log(currFreq / Math.round(noteFreq)) / Math.log(2));
         return [noteInfo[0], cents];
     }
 
@@ -479,7 +473,7 @@ function Microphone() {
 
         // Make a best guess at the frequency of the signal
         interpolatedBin = jainsMethodInterpolate(spectrum, maxIndex);
-        return interpolatedBin*FFT_FREQ_RES;
+        return interpolatedBin * FFT_FREQ_RES;
     }
 
 // -----------------------------------------------------------------------------
@@ -501,8 +495,7 @@ function Microphone() {
             a = m2 / m1;
             d = a / (1 + a);
             return maxIndex - 1 + d;
-        }
-        else {
+        } else {
             a = m3 / m2;
             d = a / (1 + a);
             return maxIndex + d;
@@ -530,7 +523,7 @@ function Microphone() {
         var currFreq = computeFreqFromFFT()
         var noteInfo = matchNote(currFreq);
         var noteFreq = noteInfo[1];
-        var cents = 1200*(Math.log(currFreq/Math.round(noteFreq))/Math.log(2));
+        var cents = 1200 * (Math.log(currFreq / Math.round(noteFreq)) / Math.log(2));
         return [noteInfo[0], cents];
     }
 
@@ -543,10 +536,10 @@ function Microphone() {
 
     function writeToWav() {
         // we flat the left and right channels down
-        var leftBuffer = mergeBuffers (leftChannel, recordingLength);
-        var rightBuffer = mergeBuffers (rightChannel, recordingLength);
+        var leftBuffer = mergeBuffers(leftChannel, recordingLength);
+        var rightBuffer = mergeBuffers(rightChannel, recordingLength);
         // we interleave both channels together
-        var interleaved = interleave (leftBuffer, rightBuffer);
+        var interleaved = interleave(leftBuffer, rightBuffer);
 
         // we create our wav file
         var buffer = new ArrayBuffer(44 + interleaved.length * 2);
@@ -574,13 +567,13 @@ function Microphone() {
         var lng = interleaved.length;
         var index = 44;
         var volume = 1;
-        for (var i = 0; i < lng; i++){
+        for (var i = 0; i < lng; i++) {
             view.setInt16(index, interleaved[i] * 0x7FFF, true);
             index += 2;
         }
 
         // our final binary blob
-        var blob = new Blob ( [ view ], { type : 'audio/wav' } );
+        var blob = new Blob([view], {type: 'audio/wav'});
 
         // let's save it locally
         var url = (window.URL || window.webkitURL).createObjectURL(blob);
@@ -602,7 +595,7 @@ function Microphone() {
 
         var inputIndex = 0;
 
-        for (var index = 0; index < length; ){
+        for (var index = 0; index < length;) {
             result[index++] = leftChannel[inputIndex];
             result[index++] = rightChannel[inputIndex];
             inputIndex++;
@@ -619,7 +612,7 @@ function Microphone() {
         var result = new Float32Array(recordingLength);
         var offset = 0;
         var lng = channelBuffer.length;
-        for (var i = 0; i < lng; i++){
+        for (var i = 0; i < lng; i++) {
             var buffer = channelBuffer[i];
             result.set(buffer, offset);
             offset += buffer.length;
@@ -632,7 +625,7 @@ function Microphone() {
 
     function writeUTFBytes(view, offset, string) {
         var lng = string.length;
-        for (var i = 0; i < lng; i++){
+        for (var i = 0; i < lng; i++) {
             view.setUint8(offset + i, string.charCodeAt(i));
         }
     }
@@ -646,7 +639,7 @@ function Microphone() {
 // external analysis. Used as a debugging / quantitative analysis tool. If
 // needed, tie it to a button so problems can be logged in real time.
 
-    this.logData = function() {
+    this.logData = function () {
         var t, f;
         t = timeData;
         fft.forward(t);
@@ -663,7 +656,7 @@ function Microphone() {
             textToWrite += f[i] + "\n";
         }
 
-        var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+        var textFileAsBlob = new Blob([textToWrite], {type: 'text/plain'});
         var fileNameToSaveAs = "jslog.txt";
 
         var downloadLink = document.createElement("a");
@@ -673,8 +666,7 @@ function Microphone() {
             // Chrome allows the link to be clicked
             // without actually adding it to the DOM.
             downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
-        }
-        else {
+        } else {
             // Firefox requires the link to be added to the DOM
             // before it can be clicked.
             downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
@@ -736,7 +728,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                  CONSTANTS                                 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -746,42 +737,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
  */
 var DSP = {
     // Channels
-    LEFT:           0,
-    RIGHT:          1,
-    MIX:            2,
+    LEFT: 0,
+    RIGHT: 1,
+    MIX: 2,
 
     // Waveforms
-    SINE:           1,
-    TRIANGLE:       2,
-    SAW:            3,
-    SQUARE:         4,
+    SINE: 1,
+    TRIANGLE: 2,
+    SAW: 3,
+    SQUARE: 4,
 
     // Filters
-    LOWPASS:        0,
-    HIGHPASS:       1,
-    BANDPASS:       2,
-    NOTCH:          3,
+    LOWPASS: 0,
+    HIGHPASS: 1,
+    BANDPASS: 2,
+    NOTCH: 3,
 
     // Window functions
-    BARTLETT:       1,
-    BARTLETTHANN:   2,
-    BLACKMAN:       3,
-    COSINE:         4,
-    GAUSS:          5,
-    HAMMING:        6,
-    HANN:           7,
-    LANCZOS:        8,
-    RECTANGULAR:    9,
-    TRIANGULAR:     10,
+    BARTLETT: 1,
+    BARTLETTHANN: 2,
+    BLACKMAN: 3,
+    COSINE: 4,
+    GAUSS: 5,
+    HAMMING: 6,
+    HANN: 7,
+    LANCZOS: 8,
+    RECTANGULAR: 9,
+    TRIANGULAR: 10,
 
     // Loop modes
-    OFF:            0,
-    FW:             1,
-    BW:             2,
-    FWBW:           3,
+    OFF: 0,
+    FW: 1,
+    BW: 2,
+    FWBW: 3,
 
     // Math
-    TWO_PI:         2*Math.PI
+    TWO_PI: 2 * Math.PI
 };
 
 // Setup arrays for platforms which do not support byte arrays
@@ -794,7 +785,7 @@ function setupTypedArray(name, fallback) {
             this[name] = this[fallback];
         } else {
             // nope.. set as Native JS array
-            this[name] = function(obj) {
+            this[name] = function (obj) {
                 if (obj instanceof Array) {
                     return obj;
                 } else if (typeof obj === "number") {
@@ -806,9 +797,9 @@ function setupTypedArray(name, fallback) {
 }
 
 setupTypedArray("Float32Array", "WebGLFloatArray");
-setupTypedArray("Int32Array",   "WebGLIntArray");
-setupTypedArray("Uint16Array",  "WebGLUnsignedShortArray");
-setupTypedArray("Uint8Array",   "WebGLUnsignedByteArray");
+setupTypedArray("Int32Array", "WebGLIntArray");
+setupTypedArray("Uint16Array", "WebGLUnsignedShortArray");
+setupTypedArray("Uint8Array", "WebGLUnsignedByteArray");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -822,7 +813,7 @@ setupTypedArray("Uint8Array",   "WebGLUnsignedByteArray");
  *
  * @returns The inverted sample buffer
  */
-DSP.invert = function(buffer) {
+DSP.invert = function (buffer) {
     for (var i = 0, len = buffer.length; i < len; i++) {
         buffer[i] *= -1;
     }
@@ -838,7 +829,7 @@ DSP.invert = function(buffer) {
  *
  * @returns The stereo interleaved buffer
  */
-DSP.interleave = function(left, right) {
+DSP.interleave = function (left, right) {
     if (left.length !== right.length) {
         throw "Can not interleave. Channel lengths differ.";
     }
@@ -846,8 +837,8 @@ DSP.interleave = function(left, right) {
     var stereoInterleaved = new Float32Array(left.length * 2);
 
     for (var i = 0, len = left.length; i < len; i++) {
-        stereoInterleaved[2*i]   = left[i];
-        stereoInterleaved[2*i+1] = right[i];
+        stereoInterleaved[2 * i] = left[i];
+        stereoInterleaved[2 * i + 1] = right[i];
     }
 
     return stereoInterleaved;
@@ -860,39 +851,39 @@ DSP.interleave = function(left, right) {
  *
  * @returns an Array containing left and right channels
  */
-DSP.deinterleave = (function() {
+DSP.deinterleave = (function () {
     var left, right, mix, deinterleaveChannel = [];
 
-    deinterleaveChannel[DSP.MIX] = function(buffer) {
-        for (var i = 0, len = buffer.length/2; i < len; i++) {
-            mix[i] = (buffer[2*i] + buffer[2*i+1]) / 2;
+    deinterleaveChannel[DSP.MIX] = function (buffer) {
+        for (var i = 0, len = buffer.length / 2; i < len; i++) {
+            mix[i] = (buffer[2 * i] + buffer[2 * i + 1]) / 2;
         }
         return mix;
     };
 
-    deinterleaveChannel[DSP.LEFT] = function(buffer) {
-        for (var i = 0, len = buffer.length/2; i < len; i++) {
-            left[i]  = buffer[2*i];
+    deinterleaveChannel[DSP.LEFT] = function (buffer) {
+        for (var i = 0, len = buffer.length / 2; i < len; i++) {
+            left[i] = buffer[2 * i];
         }
         return left;
     };
 
-    deinterleaveChannel[DSP.RIGHT] = function(buffer) {
-        for (var i = 0, len = buffer.length/2; i < len; i++) {
-            right[i]  = buffer[2*i+1];
+    deinterleaveChannel[DSP.RIGHT] = function (buffer) {
+        for (var i = 0, len = buffer.length / 2; i < len; i++) {
+            right[i] = buffer[2 * i + 1];
         }
         return right;
     };
 
-    return function(channel, buffer) {
-        left  = left  || new Float32Array(buffer.length/2);
-        right = right || new Float32Array(buffer.length/2);
-        mix   = mix   || new Float32Array(buffer.length/2);
+    return function (channel, buffer) {
+        left = left || new Float32Array(buffer.length / 2);
+        right = right || new Float32Array(buffer.length / 2);
+        mix = mix || new Float32Array(buffer.length / 2);
 
-        if (buffer.length/2 !== left.length) {
-            left  = new Float32Array(buffer.length/2);
-            right = new Float32Array(buffer.length/2);
-            mix   = new Float32Array(buffer.length/2);
+        if (buffer.length / 2 !== left.length) {
+            left = new Float32Array(buffer.length / 2);
+            right = new Float32Array(buffer.length / 2);
+            mix = new Float32Array(buffer.length / 2);
         }
 
         return deinterleaveChannel[channel](buffer);
@@ -921,10 +912,10 @@ DSP.getChannel = DSP.deinterleave;
  *
  * @returns A new Float32Array interleaved buffer.
  */
-DSP.mixSampleBuffers = function(sampleBuffer1, sampleBuffer2, negate, volumeCorrection){
+DSP.mixSampleBuffers = function (sampleBuffer1, sampleBuffer2, negate, volumeCorrection) {
     var outputSamples = new Float32Array(sampleBuffer1);
 
-    for(var i = 0; i<sampleBuffer1.length; i++){
+    for (var i = 0; i < sampleBuffer1.length; i++) {
         outputSamples[i] += (negate ? -sampleBuffer2[i] : sampleBuffer2[i]) / volumeCorrection;
     }
 
@@ -948,7 +939,7 @@ DSP.BW = 2; // SHARED with BACKWARDS LOOP MODE
 DSP.S = 3;
 
 // Find RMS of signal
-DSP.RMS = function(buffer) {
+DSP.RMS = function (buffer) {
     var total = 0;
 
     for (var i = 0, n = buffer.length; i < n; i++) {
@@ -959,7 +950,7 @@ DSP.RMS = function(buffer) {
 };
 
 // Find Peak of signal
-DSP.Peak = function(buffer) {
+DSP.Peak = function (buffer) {
     var peak = 0;
 
     for (var i = 0, n = buffer.length; i < n; i++) {
@@ -973,14 +964,14 @@ DSP.Peak = function(buffer) {
 function FourierTransform(bufferSize, sampleRate) {
     this.bufferSize = bufferSize;
     this.sampleRate = sampleRate;
-    this.bandwidth  = 2 / bufferSize * sampleRate / 2;
+    this.bandwidth = 2 / bufferSize * sampleRate / 2;
 
-    this.spectrum   = new Float32Array(bufferSize/2);
-    this.real       = new Float32Array(bufferSize);
-    this.imag       = new Float32Array(bufferSize);
+    this.spectrum = new Float32Array(bufferSize / 2);
+    this.real = new Float32Array(bufferSize);
+    this.imag = new Float32Array(bufferSize);
 
-    this.peakBand   = 0;
-    this.peak       = 0;
+    this.peakBand = 0;
+    this.peak = 0;
 
     /**
      * Calculates the *middle* frequency of an FFT band.
@@ -989,21 +980,21 @@ function FourierTransform(bufferSize, sampleRate) {
      *
      * @returns The middle frequency in Hz.
      */
-    this.getBandFrequency = function(index) {
+    this.getBandFrequency = function (index) {
         return this.bandwidth * index + this.bandwidth / 2;
     };
 
-    this.calculateSpectrum = function() {
-        var spectrum  = this.spectrum,
-            real      = this.real,
-            imag      = this.imag,
-            bSi       = 2 / this.bufferSize,
-            sqrt      = Math.sqrt,
+    this.calculateSpectrum = function () {
+        var spectrum = this.spectrum,
+            real = this.real,
+            imag = this.imag,
+            bSi = 2 / this.bufferSize,
+            sqrt = Math.sqrt,
             rval,
             ival,
             mag;
 
-        for (var i = 0, N = bufferSize/2; i < N; i++) {
+        for (var i = 0, N = bufferSize / 2; i < N; i++) {
             rval = real[i];
             ival = imag[i];
             mag = bSi * sqrt(rval * rval + ival * ival);
@@ -1029,7 +1020,7 @@ function FourierTransform(bufferSize, sampleRate) {
 function DFT(bufferSize, sampleRate) {
     FourierTransform.call(this, bufferSize, sampleRate);
 
-    var N = bufferSize/2 * bufferSize;
+    var N = bufferSize / 2 * bufferSize;
     var TWO_PI = 2 * Math.PI;
 
     this.sinTable = new Float32Array(N);
@@ -1049,19 +1040,19 @@ function DFT(bufferSize, sampleRate) {
  *
  * @returns The frequency spectrum array
  */
-DFT.prototype.forward = function(buffer) {
+DFT.prototype.forward = function (buffer) {
     var real = this.real,
         imag = this.imag,
         rval,
         ival;
 
-    for (var k = 0; k < this.bufferSize/2; k++) {
+    for (var k = 0; k < this.bufferSize / 2; k++) {
         rval = 0.0;
         ival = 0.0;
 
         for (var n = 0; n < buffer.length; n++) {
-            rval += this.cosTable[k*n] * buffer[n];
-            ival += this.sinTable[k*n] * buffer[n];
+            rval += this.cosTable[k * n] * buffer[n];
+            ival += this.sinTable[k * n] * buffer[n];
         }
 
         real[k] = rval;
@@ -1104,8 +1095,8 @@ function FFT(bufferSize, sampleRate) {
     this.cosTable = new Float32Array(bufferSize);
 
     for (i = 0; i < bufferSize; i++) {
-        this.sinTable[i] = Math.sin(-Math.PI/i);
-        this.cosTable[i] = Math.cos(-Math.PI/i);
+        this.sinTable[i] = Math.sin(-Math.PI / i);
+        this.cosTable[i] = Math.cos(-Math.PI / i);
     }
 }
 
@@ -1117,20 +1108,24 @@ function FFT(bufferSize, sampleRate) {
  *
  * @returns The frequency spectrum array
  */
-FFT.prototype.forward = function(buffer) {
+FFT.prototype.forward = function (buffer) {
     // Locally scope variables for speed up
-    var bufferSize      = this.bufferSize,
-        cosTable        = this.cosTable,
-        sinTable        = this.sinTable,
-        reverseTable    = this.reverseTable,
-        real            = this.real,
-        imag            = this.imag,
-        spectrum        = this.spectrum;
+    var bufferSize = this.bufferSize,
+        cosTable = this.cosTable,
+        sinTable = this.sinTable,
+        reverseTable = this.reverseTable,
+        real = this.real,
+        imag = this.imag,
+        spectrum = this.spectrum;
 
     var k = Math.floor(Math.log(bufferSize) / Math.LN2);
 
-    if (Math.pow(2, k) !== bufferSize) { throw "Invalid buffer size, must be a power of 2."; }
-    if (bufferSize !== buffer.length)  { throw "Supplied buffer is not the same size as defined FFT. FFT Size: " + bufferSize + " Buffer Size: " + buffer.length; }
+    if (Math.pow(2, k) !== bufferSize) {
+        throw "Invalid buffer size, must be a power of 2.";
+    }
+    if (bufferSize !== buffer.length) {
+        throw "Supplied buffer is not the same size as defined FFT. FFT Size: " + bufferSize + " Buffer Size: " + buffer.length;
+    }
 
     var halfSize = 1,
         phaseShiftStepReal,
@@ -1184,13 +1179,13 @@ FFT.prototype.forward = function(buffer) {
     return this.calculateSpectrum();
 };
 
-FFT.prototype.inverse = function(real, imag) {
+FFT.prototype.inverse = function (real, imag) {
     // Locally scope variables for speed up
-    var bufferSize      = this.bufferSize,
-        cosTable        = this.cosTable,
-        sinTable        = this.sinTable,
-        reverseTable    = this.reverseTable,
-        spectrum        = this.spectrum;
+    var bufferSize = this.bufferSize,
+        cosTable = this.cosTable,
+        sinTable = this.sinTable,
+        reverseTable = this.reverseTable,
+        spectrum = this.spectrum;
 
     real = real || this.real;
     imag = imag || this.imag;
@@ -1291,9 +1286,9 @@ function RFFT(bufferSize, sampleRate) {
 
     // don't use a lookup table to do the permute, use this instead
     this.reverseBinPermute = function (dest, source) {
-        var bufferSize  = this.bufferSize,
-            halfSize    = bufferSize >>> 1,
-            nm1         = bufferSize - 1,
+        var bufferSize = this.bufferSize,
+            halfSize = bufferSize >>> 1,
+            nm1 = bufferSize - 1,
             i = 1, r = 0, h;
 
         dest[0] = source[0];
@@ -1306,14 +1301,14 @@ function RFFT(bufferSize, sampleRate) {
             i++;
 
             h = halfSize << 1;
-            while (h = h >> 1, !((r ^= h) & h));
+            while (h = h >> 1, !((r ^= h) & h)) ;
 
             if (r >= i) {
-                dest[i]     = source[r];
-                dest[r]     = source[i];
+                dest[i] = source[r];
+                dest[r] = source[i];
 
-                dest[nm1-i] = source[nm1-r];
-                dest[nm1-r] = source[nm1-i];
+                dest[nm1 - i] = source[nm1 - r];
+                dest[nm1 - r] = source[nm1 - i];
             }
             i++;
         } while (i < halfSize);
@@ -1321,9 +1316,9 @@ function RFFT(bufferSize, sampleRate) {
     };
 
     this.generateReverseTable = function () {
-        var bufferSize  = this.bufferSize,
-            halfSize    = bufferSize >>> 1,
-            nm1         = bufferSize - 1,
+        var bufferSize = this.bufferSize,
+            halfSize = bufferSize >>> 1,
+            nm1 = bufferSize - 1,
             i = 1, r = 0, h;
 
         this.reverseTable[0] = 0;
@@ -1337,14 +1332,14 @@ function RFFT(bufferSize, sampleRate) {
             i++;
 
             h = halfSize << 1;
-            while (h = h >> 1, !((r ^= h) & h));
+            while (h = h >> 1, !((r ^= h) & h)) ;
 
             if (r >= i) {
                 this.reverseTable[i] = r;
                 this.reverseTable[r] = i;
 
-                this.reverseTable[nm1-i] = nm1-r;
-                this.reverseTable[nm1-r] = nm1-i;
+                this.reverseTable[nm1 - i] = nm1 - r;
+                this.reverseTable[nm1 - r] = nm1 - i;
             }
             i++;
         } while (i < halfSize);
@@ -1369,14 +1364,14 @@ function RFFT(bufferSize, sampleRate) {
 //             ...
 // trans[n-1]   = im[1]
 
-RFFT.prototype.forward = function(buffer) {
-    var n         = this.bufferSize,
-        spectrum  = this.spectrum,
-        x         = this.trans,
-        TWO_PI    = 2*Math.PI,
-        sqrt      = Math.sqrt,
-        i         = n >>> 1,
-        bSi       = 2 / n,
+RFFT.prototype.forward = function (buffer) {
+    var n = this.bufferSize,
+        spectrum = this.spectrum,
+        x = this.trans,
+        TWO_PI = 2 * Math.PI,
+        sqrt = Math.sqrt,
+        i = n >>> 1,
+        bSi = 2 / n,
         n2, n4, n8, nn,
         t1, t2, t3, t4,
         i1, i2, i3, i4, i5, i6, i7, i8,
@@ -1398,25 +1393,25 @@ RFFT.prototype.forward = function(buffer) {
     for (var ix = 0, id = 4; ix < n; id *= 4) {
         for (var i0 = ix; i0 < n; i0 += id) {
             //sumdiff(x[i0], x[i0+1]); // {a, b}  <--| {a+b, a-b}
-            st1 = x[i0] - x[i0+1];
-            x[i0] += x[i0+1];
-            x[i0+1] = st1;
+            st1 = x[i0] - x[i0 + 1];
+            x[i0] += x[i0 + 1];
+            x[i0 + 1] = st1;
         }
-        ix = 2*(id-1);
+        ix = 2 * (id - 1);
     }
 
     n2 = 2;
     nn = n >>> 1;
 
-    while((nn = nn >>> 1)) {
+    while ((nn = nn >>> 1)) {
         ix = 0;
         n2 = n2 << 1;
         id = n2 << 1;
         n4 = n2 >>> 2;
         n8 = n2 >>> 3;
         do {
-            if(n4 !== 1) {
-                for(i0 = ix; i0 < n; i0 += id) {
+            if (n4 !== 1) {
+                for (i0 = ix; i0 < n; i0 += id) {
                     i1 = i0;
                     i2 = i1 + n4;
                     i3 = i2 + n4;
@@ -1451,7 +1446,7 @@ RFFT.prototype.forward = function(buffer) {
                     x[i1] += t2;
                 }
             } else {
-                for(i0 = ix; i0 < n; i0 += id) {
+                for (i0 = ix; i0 < n; i0 += id) {
                     i1 = i0;
                     i2 = i1 + n4;
                     i3 = i2 + n4;
@@ -1479,10 +1474,11 @@ RFFT.prototype.forward = function(buffer) {
             cc1 = Math.cos(a);
 
             //ss3 = sin(3*a); cc3 = cos(3*a);
-            cc3 = 4*cc1*(cc1*cc1-0.75);
-            ss3 = 4*ss1*(0.75-ss1*ss1);
+            cc3 = 4 * cc1 * (cc1 * cc1 - 0.75);
+            ss3 = 4 * ss1 * (0.75 - ss1 * ss1);
 
-            ix = 0; id = n2 << 1;
+            ix = 0;
+            id = n2 << 1;
             do {
                 for (i0 = ix; i0 < n; i0 += id) {
                     i1 = i0 + j;
@@ -1497,12 +1493,12 @@ RFFT.prototype.forward = function(buffer) {
 
                     //cmult(c, s, x, y, &u, &v)
                     //cmult(cc1, ss1, x[i7], x[i3], t2, t1); // {u,v} <--| {x*c-y*s, x*s+y*c}
-                    t2 = x[i7]*cc1 - x[i3]*ss1;
-                    t1 = x[i7]*ss1 + x[i3]*cc1;
+                    t2 = x[i7] * cc1 - x[i3] * ss1;
+                    t1 = x[i7] * ss1 + x[i3] * cc1;
 
                     //cmult(cc3, ss3, x[i8], x[i4], t4, t3);
-                    t4 = x[i8]*cc3 - x[i4]*ss3;
-                    t3 = x[i8]*ss3 + x[i4]*cc3;
+                    t4 = x[i8] * cc3 - x[i4] * ss3;
+                    t3 = x[i8] * ss3 + x[i4] * cc3;
 
                     //sumdiff(t2, t4);   // {a, b} <--| {a+b, a-b}
                     st1 = t2 - t4;
@@ -1542,7 +1538,7 @@ RFFT.prototype.forward = function(buffer) {
 
     while (--i) {
         rval = x[i];
-        ival = x[n-i-1];
+        ival = x[n - i - 1];
         mag = bSi * sqrt(rval * rval + ival * ival);
 
         if (mag > this.peak) {

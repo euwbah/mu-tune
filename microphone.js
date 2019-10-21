@@ -131,7 +131,24 @@ function Microphone() {
         // Check that browser supports getUserMedia
         if (navigator.getUserMedia) {
             // Request the microphone
-            navigator.getUserMedia({audio:true}, gotStream, noStream);
+            navigator.getUserMedia({
+                audio: {
+                    mandatory: {
+                        // Firefox params
+                        echoCancellation: false,
+                        autoGainControl: false,
+                        noiseSuppression: false,
+
+                        // Chrome params
+                        googEchoCancellation: false,
+                        googAutoGainControl: false,
+                        googAutoGainControl2: false,
+                        googNoiseSuppression: false,
+                        googHighpassFilter: false,
+                        googTypingNoiseDetection: false
+                    }
+                }
+            }, gotStream, noStream);
         }
         else {
             alert('Sorry, your browser does not support getUserMedia');

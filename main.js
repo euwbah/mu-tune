@@ -30,7 +30,7 @@ let nFrequenciesToStore = window.innerWidth / 2;
 let frequencies = [];
 
 const displayScrollSmoothing = 6;
-const ampThreshold = -80;
+const ampThreshold = -100;
 /// A frequency will only be accepted if the average of the last n unfiltered frequencies is within a
 /// factor of `frequencyDeviationThreshold` of the current frequency.
 const frequencyDeviationThreshold = 1.6;
@@ -128,11 +128,16 @@ window.onload = ev => {
     osc.type = 'triangle';
     osc.frequency.value = baseFreq;
     osc.connect(gain);
-    osc.start();
+
+    let oscStarted = false;
 
     let playBtn = $('#play');
 
     playBtn[0].onpointerdown = () => {
+        if (!oscStarted) {
+            osc.start();
+            oscStarted = true;
+        }
         gain.gain.value = 0.6;
         playBtn.css({
             filter: 'invert(100%) blur(1px)'

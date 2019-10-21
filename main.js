@@ -51,6 +51,15 @@ $('#play')[0].oncontextmenu = function (e) {
 
 window.onload = ev => {
 
+    // Redirect to scale builder config if no config in the location hash.
+    if (location.hash.trim().length === 0) {
+        window.location.href = 'builder.html';
+    }
+
+    $('#builder').click(() => {
+       window.location.href = 'builder.html';
+    });
+
     {
         let configStr = location.hash.substr(1);
 

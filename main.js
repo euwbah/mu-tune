@@ -37,13 +37,13 @@ const frequencyDeviationThreshold = 1.6;
 const nUnfilteredFrequenciesToStore = 15;
 const centOffsetSmoothing = 12;
 
-window.oncontextmenu = function(event) {
+window.oncontextmenu = function (event) {
     event.preventDefault();
     event.stopPropagation();
     return false;
 };
 
-$('#play')[0].oncontextmenu = function(e) {
+$('#play')[0].oncontextmenu = function (e) {
     e.preventDefault();
     e.stopPropagation();
     return false;
@@ -77,6 +77,12 @@ window.onload = ev => {
         } catch (e) {
             alert('Error parsing config: scale pattern')
         }
+
+        let scalePatternSteps = scalePattern.reduce((a, b) => a + b);
+        if (scalePatternSteps !== steps) {
+            alert(`Scale pattern has ${scalePatternSteps} steps, expected ${steps} instead`);
+        }
+
         try {
             rootNoteStepsFromBaseFreq = parseInt(offsetStr);
         } catch (e) {
@@ -104,8 +110,8 @@ window.onload = ev => {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    let freqtext = $('#freqtext');
-    let centstext = $('#centstext');
+    let $freqtext = $('#freqtext');
+    let $centstext = $('#centstext');
 
     let tuner = new Microphone();
     tuner.initialize();
@@ -131,25 +137,47 @@ window.onload = ev => {
 
     let oscStarted = false;
 
-    let playBtn = $('#play');
+    let $playBtn = $('#play');
 
-    playBtn[0].onpointerdown = () => {
+    $playBtn[0].onpointerdown = () => {
         if (!oscStarted) {
             osc.start();
             oscStarted = true;
         }
         gain.gain.value = 0.6;
-        playBtn.css({
+        $playBtn.css({
             filter: 'invert(100%) blur(1px)'
         })
     };
 
-    playBtn[0].onpointerup = () => {
+    $playBtn[0].onpointerup = () => {
         gain.gain.value = 0;
-        playBtn.css({
+        $playBtn.css({
             filter: 'invert(70%)'
         })
     };
+
+    let snapToScale = false;
+
+    let $snapBtn = $('#snap');
+
+    $snapBtn.click(() => {
+        if (!snapToScale) {
+            snapToScale = true;
+            $snapBtn.css({
+                backgroundColor: '#ffaa00aa',
+                color: 'black',
+                fontWeight: 500
+            });
+        } else {
+            snapToScale = false;
+            $snapBtn.css({
+                backgroundColor: 'transparent',
+                color: '#ffaa00aa',
+                fontWeight: 200
+            });
+        }
+    });
 
     const frame = () => {
         // Method 1: Autocorrelation
@@ -190,7 +218,7 @@ window.onload = ev => {
             freq = smoothFreq / (nonNullCount + 5);
         }
 
-        freqtext.text(`${freq ? freq.toFixed(2) : 'nil' }Hz, ${amp.toFixed(2)}dB`);
+        $freqtext.text(`${freq ? freq.toFixed(2) : 'nil'}Hz, ${amp.toFixed(2)}dB`);
 
         frequencies.push(freq);
         if (frequencies.length > nFrequenciesToStore)
@@ -271,7 +299,7 @@ window.onload = ev => {
 
         ctx.stroke();
 
-        // Calculate cent offset
+        // Find intended note & calculate cent offset
 
         // Use average frequencies to make display less haphazard
         let recentFreqs = [];
@@ -281,15 +309,53 @@ window.onload = ev => {
                 recentFreqs.push(f);
         }
 
-        let stepsFromBaseFreq;
-
         if (recentFreqs.length !== 0) {
             let avgFreq = recentFreqs.reduce((a, b) => a + b) / recentFreqs.length;
             let octsFromBaseFreq = Math.log2(avgFreq / baseFreq);
-            stepsFromBaseFreq = octsFromBaseFreq / stepSize;
-            correctNote = Math.round(stepsFromBaseFreq);
+            let stepsFromBaseFreq = octsFromBaseFreq / stepSize;
+            if (!snapToScale)
+                correctNote = Math.round(stepsFromBaseFreq);
+            else {
+                // Snap to scale:
+
+                // Get the modulo of the steps from the root of the scale (Not base freq!)
+                let modStepsFromRoot = mod(stepsFromBaseFreq - rootNoteStepsFromBaseFreq, steps);
+
+                // Go through all the scale notes and find the two scale notes the modStepsFromRoot resides between
+                let lower = 0;
+                let higher = null;
+                scaleNotes.some(x => {
+                    if (x > modStepsFromRoot) {
+                        higher = x;
+                        return true;
+                    }
+                    lower = x;
+                });
+
+                if (higher === null) {
+                    console.log('ERROR: unable to find scale note to snap to.');
+                }
+
+                let lowerDiff = modStepsFromRoot - lower;
+                let higherDiff = higher - modStepsFromRoot;
+
+                if (lowerDiff < higherDiff) {
+                    // The correct note is the lower of the two scale notes the current frequency resides in
+
+                    // Subtract off the error from the stepsFromBaseFreq in order to keep the absolute frequency
+                    // the same. (the mod operation defaults the octave to that of the base frequency)
+                    // Math.round is used in case of floating point errors.
+                    correctNote = Math.round(stepsFromBaseFreq - lowerDiff);
+                } else {
+                    // The correct note is the higher of the two scale notes.
+                    correctNote = Math.round(stepsFromBaseFreq + higherDiff);
+                }
+            }
+
+            // Note: If snap to scale is used, the cents offset will show the cent offset to the next scale note
+            //       instead of to the next closest step.
             let centsOffset = (stepsFromBaseFreq - correctNote) * stepSize * 1200;
-            centstext.text(`${centsOffset > 0 ? '+' : ''}${centsOffset.toFixed(2)} ¢`)
+            $centstext.text(`${centsOffset > 0 ? '+' : ''}${centsOffset.toFixed(2)} ¢`)
         }
 
         // Set oscillator freq to correct note

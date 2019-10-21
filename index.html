@@ -80,6 +80,23 @@
             font-size: 2rem;
         }
 
+        #snap {
+            position: absolute;
+            padding: 5px 10px;
+            left: 1rem;
+            bottom: 6rem;
+            transition: all 0.25s;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #ffaa00aa;
+            background-color: transparent;
+            color: #ffaa00aa;
+            border-radius: 10px;
+            font-family: Roboto, sans-serif;
+            font-weight: 200;
+            font-size: 1.4rem;
+        }
+
         #play {
             position: absolute;
             left: 1rem;
@@ -98,8 +115,9 @@
 <div id="freqtext">0Hz, -120dB</div>
 <div id="centstext" class="unselectable taptostart">+10.0 ¢</div>
 <div id="msg" class="unselectable taptostart"> tap to start </div>
+<div id="snap"> snap to scale </div>
 <img id="play" src="sound.png">
-<div id="version">v 0.10</div>
+<div id="version">v 0.11</div>
 
 <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"

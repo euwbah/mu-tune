@@ -68,6 +68,12 @@
             font-size: 4rem;
         }
 
+        #logo {
+            font-weight: 300;
+            color: #ffaa55;
+            padding-right: 0.5rem;
+        }
+
         #version {
             position: absolute;
             right: 1rem;
@@ -75,7 +81,13 @@
             text-align: right;
             color: aliceblue;
             font-weight: 200;
-            font-size: 2rem;
+            font-size: 1.5rem;
+        }
+
+        #github-logo {
+            width: 4rem;
+            vertical-align: middle;
+            padding-left: 0.5rem;
         }
 
         #snap {
@@ -92,6 +104,7 @@
             border-radius: 10px;
             font-weight: 300;
             font-size: 1.8rem;
+            cursor: pointer;
         }
 
         #play {
@@ -102,6 +115,7 @@
             height: 4rem;
             filter: invert(70%);
             transition: all 0.25s;
+            cursor: pointer;
         }
 
         #builder {
@@ -111,6 +125,7 @@
             width: 4rem;
             height: 4rem;
             filter: invert(100%);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -124,7 +139,11 @@
 <div id="msg" class="unselectable taptostart"> tap to start </div>
 <div id="snap"> snap to scale </div>
 <img id="play" src="sound.png">
-<div id="version">v 1.6</div>
+<div id="version">
+    <span id="logo">μuτune</span>
+    v 1.7
+    <a href="https://github.com/euwbah/mu-tune"><img id="github-logo" src="github-logo.png" alt="github logo"></a>
+</div>
 
 <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"

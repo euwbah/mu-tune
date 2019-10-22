@@ -203,7 +203,7 @@ window.onload = ev => {
 
         let avgUnfilteredFreq = lastUnfilteredFrequencies.reduce((a, b) => a + b) / lastUnfilteredFrequencies.length;
 
-        if (!freq || amp < ampThreshold)
+        if (freq === Infinity || isNaN(freq) || !freq || amp < ampThreshold)
             freq = null;
 
         if (freq / avgUnfilteredFreq > frequencyDeviationThreshold || avgUnfilteredFreq / freq > frequencyDeviationThreshold) {
@@ -390,7 +390,7 @@ window.onload = ev => {
                 } else {
                     alert('Not yet loaded... please try again');
                 }
-            }, startedInitialise ? 0 : 900);
+            }, startedInitialise ? 0 : 600);
 
             startedInitialise = true;
         }

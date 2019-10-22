@@ -382,7 +382,7 @@ window.onload = ev => {
                 tuner.initialize();
 
             setTimeout(() => {
-                if (tuner.isInitialized()) {
+                if (tuner.isInitialized() && !started) {
                     started = true;
                     tuner.startListening();
                     $('#msg').css('display', 'none');

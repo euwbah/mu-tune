@@ -127,18 +127,10 @@ function Microphone() {
         // Make a note that the microphone is about to be accessed
         console.log('Beginning!');
 
-        // Normalize the various vendor prefixed versions of getUserMedia
-        navigator.getUserMedia = (
-            navigator.mediaDevices.getUserMedia ||
-            navigator.getUserMedia ||
-            navigator.webkitGetUserMedia ||
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia);
-
         // Check that browser supports getUserMedia
-        if (navigator.getUserMedia) {
+        if (navigator.mediaDevices.getUserMedia) {
             // Request the microphone
-            navigator.getUserMedia({
+            navigator.mediaDevices.getUserMedia({
                 audio: {
                     // Firefox params
                     echoCancellation: false,
@@ -152,7 +144,7 @@ function Microphone() {
                     googNoiseSuppression: false,
                     googHighpassFilter: false
                 }
-            }, gotStream, noStream);
+            }).then(gotStream).catch(noStream);
         } else {
             alert('Sorry, your browser does not support getUserMedia');
         }

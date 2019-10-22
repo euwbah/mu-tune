@@ -4,8 +4,8 @@
   "theme_color": "#ff9900",
   "background_color": "#000000",
   "display": "fullscreen",
-  "Scope": "/",
-  "start_url": "/mu-tune/",
+  "Scope": "/mu-tune/",
+  "start_url": "/",
   "icons": [
     {
       "src": "images/icons/icon-72x72.png",

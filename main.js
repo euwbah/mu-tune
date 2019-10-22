@@ -373,11 +373,14 @@ window.onload = ev => {
         requestAnimationFrame(frame);
     };
 
+    let startedInitialise = false;
     let started = false;
 
     $('.taptostart').click(() => {
         if (!started) {
-            tuner.initialize();
+            if (!startedInitialise)
+                tuner.initialize();
+
             setTimeout(() => {
                 if (tuner.isInitialized()) {
                     started = true;
@@ -387,7 +390,9 @@ window.onload = ev => {
                 } else {
                     alert('Not yet loaded... please try again');
                 }
-            }, 750);
+            }, startedInitialise ? 0 : 900);
+
+            startedInitialise = true;
         }
     });
 };

@@ -72,6 +72,9 @@ function Microphone() {
     var rightChannel;
     var notes; // A JSON look-up table to get notes from frequencies
 
+
+    var audioContext = window.AudioContext || window.webkitAudioContext;
+
 // -----------------------------------------------------------------------------
 // initialize function. Properly initializes the parameters of a Microphone
 // object, defines the frequency-->note lookup table, and calls getUserMedia
@@ -83,7 +86,7 @@ function Microphone() {
         initialized = false;
         context = null;
         inputHardware = null;       // Microphone
-        SAMPLE_RATE = new AudioContext().sampleRate;
+        SAMPLE_RATE = new audioContext().sampleRate;
         timeData = null;
         procNode = null;
         BUFFER_LEN = 1024;          // Keep a power of 2, but can change to
@@ -151,7 +154,7 @@ function Microphone() {
         } else {
             alert('Sorry, your browser does not support getUserMedia');
         }
-    }
+    };
 
 // -----------------------------------------------------------------------------
 // gotStream function. This function is the success callback for getUserMedia
@@ -161,7 +164,6 @@ function Microphone() {
     function gotStream(stream) {
         console.log('gotStream called');
         // Create the audio context
-        audioContext = window.AudioContext || window.webkitAudioContext;
         context = new audioContext();
 
         // Set up variables to perform FFT

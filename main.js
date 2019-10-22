@@ -30,7 +30,7 @@ let nFrequenciesToStore = window.innerWidth / 2;
 let frequencies = [];
 
 const displayScrollSmoothing = 6;
-const ampThreshold = -40;
+const ampThreshold = -50;
 /// A frequency will only be accepted if the average of the last n unfiltered frequencies is within a
 /// factor of `frequencyDeviationThreshold` of the current frequency.
 const frequencyDeviationThreshold = 1.6;
@@ -124,7 +124,6 @@ window.onload = ev => {
     let $centstext = $('#centstext');
 
     let tuner = new Microphone();
-    tuner.initialize();
 
     // Contains the last few raw frequencies from the algorithm to test for high deviations.
     let lastUnfilteredFrequencies = new Array(nUnfilteredFrequenciesToStore).fill(rootNoteStepsFromBaseFreq);
@@ -378,14 +377,17 @@ window.onload = ev => {
 
     $('.taptostart').click(() => {
         if (!started) {
-            if (tuner.isInitialized()) {
-                started = true;
-                tuner.startListening();
-                $('#msg').css('display', 'none');
-                frame();
-            } else {
-                alert('Not yet loaded... please try again');
-            }
+            tuner.initialize();
+            setTimeout(() => {
+                if (tuner.isInitialized()) {
+                    started = true;
+                    tuner.startListening();
+                    $('#msg').css('display', 'none');
+                    frame();
+                } else {
+                    alert('Not yet loaded... please try again');
+                }
+            }, 750);
         }
     });
 };

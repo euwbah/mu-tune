@@ -26,7 +26,7 @@ let lowestDisplayedPitch = 0;
 /// This number represents the number of octaves from the base frequency the top of the screen is.
 let highestDisplayedPitch = lowestDisplayedPitch + window.innerHeight / pxDistanceBetweenOctaves;
 
-let nFrequenciesToStore = window.innerWidth / 2;
+let nFrequenciesToStore = Math.ceil(window.innerWidth / 2);
 let frequencies = [];
 
 const displayScrollSmoothing = 6;
@@ -58,7 +58,7 @@ window.onload = ev => {
     }
 
     $('#builder').click(() => {
-       window.location.href = `builder.html${location.hash}`;
+        window.location.href = `builder.html${location.hash}`;
     });
 
     {
@@ -109,14 +109,14 @@ window.onload = ev => {
         scaleNotes.push(scaleNotes[scaleNotes.length - 1] + x);
     });
 
-    let cv = $('#cv')[0];
-    cv.height = window.innerHeight;
-    cv.width = window.innerWidth;
-    nFrequenciesToStore = window.innerWidth / 2;
+    let $cv = $('#cv')[0];
+    $cv.height = window.innerHeight;
+    $cv.width = window.innerWidth;
+    nFrequenciesToStore = Math.ceil(window.innerWidth / 2);
 
     frequencies = new Array(nFrequenciesToStore).fill(baseFreq);
 
-    let ctx = cv.getContext('2d');
+    let ctx = $cv.getContext('2d');
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -148,7 +148,8 @@ window.onload = ev => {
 
     let $playBtn = $('#play');
 
-    $playBtn[0].onpointerdown = () => {
+    $playBtn[0].onpointerdown = (e) => {
+        e.preventDefault();
         if (!oscStarted) {
             osc.start();
             oscStarted = true;
@@ -184,6 +185,44 @@ window.onload = ev => {
                 backgroundColor: 'transparent',
                 color: '#ffaa00aa',
                 fontWeight: 300
+            });
+        }
+    });
+
+    let $zoominBtn = $('#zoomin');
+    let $zoomoutBtn = $('#zoomout');
+
+    $zoominBtn.click(() => {
+        pxDistanceBetweenOctaves += 100;
+        if (pxDistanceBetweenOctaves > 1400)
+            pxDistanceBetweenOctaves = 1400;
+        lowestDisplayedPitch = highestDisplayedPitch - $cv.height / pxDistanceBetweenOctaves;
+    });
+
+    $zoomoutBtn.click(() => {
+        pxDistanceBetweenOctaves -= 100;
+        if (pxDistanceBetweenOctaves < 300)
+            pxDistanceBetweenOctaves = 300;
+        lowestDisplayedPitch = highestDisplayedPitch - $cv.height / pxDistanceBetweenOctaves;
+    });
+
+    let $autoscrollBtn = $('#autoscroll');
+    let autoscroll = true;
+
+    $autoscrollBtn.click(() => {
+        if (autoscroll) {
+            autoscroll = false;
+            $autoscrollBtn.css({
+                backgroundColor: '#0044ffaa',
+                filter: 'invert(100%)',
+                borderColor: '#0044ffaa'
+            });
+        } else {
+            autoscroll = true;
+            $autoscrollBtn.css({
+                borderColor: '#ffaa00aa',
+                filter: 'invert(0%)',
+                backgroundColor: 'transparent'
             });
         }
     });
@@ -233,16 +272,18 @@ window.onload = ev => {
         if (frequencies.length > nFrequenciesToStore)
             frequencies.splice(0, frequencies.length - nFrequenciesToStore);
 
-        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.clearRect(0, 0, $cv.width, $cv.height);
 
-        if (freq !== null) {
+        // Auto scroll according to pitch.
+
+        if (freq !== null && autoscroll) {
             let currPitchYCoord = convertFreqToYCoord(freq);
             if (currPitchYCoord < 100) {
                 highestDisplayedPitch += 0.001 + (100 - currPitchYCoord) / pxDistanceBetweenOctaves / displayScrollSmoothing;
-                lowestDisplayedPitch = highestDisplayedPitch - cv.height / pxDistanceBetweenOctaves;
-            } else if (currPitchYCoord > cv.height - 100) {
-                lowestDisplayedPitch -= 0.001 + (currPitchYCoord - (cv.height - 100)) / pxDistanceBetweenOctaves / displayScrollSmoothing;
-                highestDisplayedPitch = lowestDisplayedPitch + cv.height / pxDistanceBetweenOctaves;
+                lowestDisplayedPitch = highestDisplayedPitch - $cv.height / pxDistanceBetweenOctaves;
+            } else if (currPitchYCoord > $cv.height - 100) {
+                lowestDisplayedPitch -= 0.001 + (currPitchYCoord - ($cv.height - 100)) / pxDistanceBetweenOctaves / displayScrollSmoothing;
+                highestDisplayedPitch = lowestDisplayedPitch + $cv.height / pxDistanceBetweenOctaves;
             }
         }
 
@@ -279,7 +320,7 @@ window.onload = ev => {
             }
 
             let yCoord = convertFreqToYCoord(baseFreq * repeatingIntervalType ** (s / steps));
-            ctx.moveTo(cv.width, yCoord);
+            ctx.moveTo($cv.width, yCoord);
             ctx.lineTo(0, yCoord);
             ctx.stroke();
         }
@@ -376,7 +417,11 @@ window.onload = ev => {
     let startedInitialise = false;
     let started = false;
 
-    $('.taptostart').click(() => {
+    let pointerDown = false;
+    let pointerX, pointerY;
+
+    $cv.onpointerdown = (e) => {
+        e.preventDefault();
         if (!started) {
             if (!startedInitialise)
                 tuner.initialize();
@@ -393,8 +438,33 @@ window.onload = ev => {
             }, startedInitialise ? 0 : 600);
 
             startedInitialise = true;
+        } else {
+            console.log('pointer down');
+            pointerDown = true;
+            pointerX = e.clientX;
+            pointerY = e.clientY;
         }
-    });
+    };
+
+    $cv.onpointerup = e => {
+        e.preventDefault();
+        console.log('pointer up');
+        pointerDown = false;
+    };
+
+    $cv.onpointermove = e => {
+        e.preventDefault();
+        if (!autoscroll && pointerDown) {
+            let dx = e.clientX - pointerX;
+            let dy = e.clientY - pointerY;
+            console.log(dy);
+            pointerX = e.clientX;
+            pointerY = e.clientY;
+
+            lowestDisplayedPitch += dy / pxDistanceBetweenOctaves;
+            highestDisplayedPitch = lowestDisplayedPitch + window.innerHeight / pxDistanceBetweenOctaves;
+        }
+    };
 };
 
 function mod(n, m) {

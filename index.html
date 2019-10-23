@@ -18,6 +18,18 @@
             font-family: Roboto, sans-serif;
         }
 
+        @media all and (max-width: 330px) {
+            html, body {
+                font-size: 75%;
+            }
+        }
+
+        @media all and (max-width: 380px) and (min-width: 330px) {
+            html, body {
+                font-size: 90%;
+            }
+        }
+
         .unselectable {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -41,6 +53,7 @@
             text-align: right;
             color: aliceblue;
             font-weight: 200;
+            pointer-events: none;
         }
 
         #centstext {
@@ -52,20 +65,22 @@
             color: white;
             font-weight: 500;
             font-size: 5rem;
+            pointer-events: none;
         }
 
         #msg {
             display: table-cell;
             position: absolute;
             left: 0vw;
-            top: 8rem;
+            top: 30vh;
             width: 100vw;
             height: 40vh;
             text-align: center;
             vertical-align: middle;
             color: #7799BB;
             font-weight: 200;
-            font-size: 4rem;
+            font-size: 3.4rem;
+            pointer-events: none;
         }
 
         #logo {
@@ -88,6 +103,56 @@
             width: 4rem;
             vertical-align: middle;
             padding-left: 0.5rem;
+        }
+
+        #zoomin {
+            position: absolute;
+            top: 6rem;
+            left: 1rem;
+            width: 3rem;
+            height: 3rem;
+            padding-bottom: 1rem;
+            color: white;
+            border-style: solid;
+            border-width: 2px;
+            border-radius: 1.5rem 1.5rem 0 0;
+            border-color: #ffaa00aa;
+            font-size: 3rem;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #zoomout {
+            position: absolute;
+            top: 10rem;
+            left: 1rem;
+            width: 3rem;
+            height: 3rem;
+            padding-bottom: 1rem;
+            color: white;
+            border-style: solid;
+            border-width: 2px;
+            border-radius: 0 0 1.5rem 1.5rem;
+            border-color: #ffaa00aa;
+            font-size: 3rem;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #autoscroll {
+            position: absolute;
+            top: 14.5rem;
+            left: 1rem;
+            width: 2.45rem;
+            padding: 0.3rem 0.55rem 0.3rem 0rem;
+            text-align: center;
+            vertical-align: middle;
+            background: transparent;
+            transition: all 0.25s;
+            border-color: #ffaa00aa;
+            border-style: solid;
+            border-radius: 1rem;
+            border-width: 2px;
         }
 
         #snap {
@@ -131,17 +196,20 @@
 </head>
 <body>
 
-<canvas id="cv" class="taptostart"></canvas>
+<canvas id="cv"></canvas>
 
 <img id="builder" src="settings.png">
 <div id="freqtext">0Hz, -120dB</div>
-<div id="centstext" class="unselectable taptostart">+10.0 ¢</div>
-<div id="msg" class="unselectable taptostart"> tap to start </div>
+<div id="centstext" class="unselectable">+10.0 ¢</div>
+<div id="msg" class="unselectable"> tap to start </div>
+<div id="zoomin">+</div>
+<div id="zoomout">&mdash;</div>
+<img id="autoscroll" src="lock.png" alt="auto scroll toggle">
 <div id="snap"> snap to scale </div>
 <img id="play" src="sound.png">
 <div id="version">
     <span id="logo">μuτune</span>
-    v 1.8
+    v 1.9
     <a href="https://github.com/euwbah/mu-tune"><img id="github-logo" src="github-logo.png" alt="github logo"></a>
 </div>
 

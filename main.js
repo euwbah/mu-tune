@@ -216,7 +216,7 @@ window.onload = ev => {
         if (freq) {
             let smoothFreq = freq * 5;
             let nonNullCount = 0;
-            for (let i = frequencies.length - 1; nonNullCount < 5 && i >= 0; i--) {
+            for (let i = frequencies.length - 1; nonNullCount < 4 && i >= 0; i--) {
                 let f = frequencies[i];
                 if (f) {
                     smoothFreq += frequencies[i];

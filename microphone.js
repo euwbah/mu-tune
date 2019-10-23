@@ -91,7 +91,7 @@ function Microphone() {
         procNode = null;
         BUFFER_LEN = 1024;          // Keep a power of 2, but can change to
                                     // provide more data, increased resolution
-        MIN_SUPPORTED_FREQ = 60;
+        MIN_SUPPORTED_FREQ = 40;
         MAX_PEAK_SEARCH = (SAMPLE_RATE / MIN_SUPPORTED_FREQ);
         fft = null;
         spectrum = null;
@@ -220,7 +220,19 @@ function Microphone() {
             if (!processing) {
                 processing = true;
                 // connect mic input so we can process it whenever we want
-                inputHardware.connect(procNode);
+                let hsf = context.createBiquadFilter();
+                hsf.type = 'highshelf';
+                hsf.frequency.value = 3000;
+                hsf.gain.value = -24;
+
+                let lsf = context.createBiquadFilter();
+                lsf.type = 'lowshelf';
+                lsf.frequency.value = 30;
+                lsf.gain.value = -24;
+
+                inputHardware.connect(hsf);
+                hsf.connect(lsf);
+                lsf.connect(procNode);
             }
         }
     }

@@ -454,7 +454,7 @@ window.onload = ev => {
 
     $cv.onpointermove = e => {
         e.preventDefault();
-        if (!autoscroll && pointerDown) {
+        if (pointerDown) {
             let dx = e.clientX - pointerX;
             let dy = e.clientY - pointerY;
             console.log(dy);
